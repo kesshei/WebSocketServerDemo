@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+</head>
+<body>
+    蓝创精英团队 webSocket Server demo
+    <div id="message" style="border: solid 1px #333; padding: 4px; width: 550px; overflow: auto; background-color: #404040; height: 300px; margin-bottom: 8px; font-size: 14px;">
+    </div>
+    <input id="text" type="text" onkeypress="enter(event);" style="width: 340px" />
+    &nbsp;&nbsp;
+    <button id="send" onclick="send();">发送</button>
+    <button onclick="quit();">停止</button>
+</body>
+</html>
+<script type="text/javascript">
+    var ws;
+    var msgContainer = document.getElementById('message');
+    var text = document.getElementById('text');
+    window.onload = function () {
+        ws = new WebSocket("ws://localhost:5000/ws");
+        ws.onopen = function (e) {
+            var msg = document.createElement('div');
+            msg.style.color = '#0f0';
+            msg.innerHTML = "Server > connection open.";
+            msgContainer.appendChild(msg);
+        };
+        ws.onmessage = function (e) {
+            var msg = document.createElement('div');
+            msg.style.color = '#0f0';
+            msg.innerHTML = e.data;
+            msgContainer.appendChild(msg);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+        };
+        ws.onerror = function (e) {
+            var msg = document.createElement('div');
+            msg.style.color = '#0f0';
+            msg.innerHTML = 'Server > ' + e.data;
+            msgContainer.appendChild(msg);
+        };
+        ws.onclose = function (e) {
+            var msg = document.createElement('div');
+            msg.style.color = '#0f0';
+            msg.innerHTML = 'Server > connection closed.';
+            msgContainer.appendChild(msg);
+            ws = null;
+        };
+    }
+    function quit() {
+        if (ws) {
+            ws.close();
+            var msg = document.createElement('div');
+            msg.style.color = '#0f0';
+            msg.innerHTML = 'Server >start closed.';
+            msgContainer.appendChild(msg);
+            ws = null;
+        }
+    }
+    function send() {
+        ws.send(text.value);
+        var htmlValue = "客户端: " + text.value + "  " + getNowTime();
+        var msg = document.createElement('div');
+        msg.style.color = '#ffff00';
+        msg.innerHTML = htmlValue;
+        msgContainer.appendChild(msg);
+        text.value = "";
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+    function enter(event) {
+        if (event.keyCode == 13) {
+            send();
+        }
+    }
+    //获取当前时间
+    function getNowTime() {
+        var date = new Date();
+        //年 getFullYear()：四位数字返回年份
+        var year = date.getFullYear(); //getFullYear()代替getYear()
+        //月 getMonth()：0 ~ 11
+        var month = date.getMonth() + 1;
+        //日 getDate()：(1 ~ 31)
+        var day = date.getDate();
+        //时 getHours()：(0 ~ 23)
+        var hour = date.getHours();
+        //分 getMinutes()： (0 ~ 59)
+        var minute = date.getMinutes();
+        //秒 getSeconds()：(0 ~ 59)
+        var second = date.getSeconds();
+        var time = year + '/' + addZero(month) + '/' + addZero(day) + ' ' + addZero(hour) + ':' + addZero(minute) + ':' + addZero(second);
+        return time;
+    }
+    //小于10的拼接上0字符串
+    function addZero(s) {
+        return s < 10 ? ('0' + s) : s;
+    }
+</script>
